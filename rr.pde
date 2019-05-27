@@ -290,7 +290,7 @@ int r = 0, g = 255, b = 255;
 float waterLevel;
 float waterBottom = -140;
 float sinkRate = 0.11;
-float cloudHeight = 700;
+float cloudHeight = 1000;
 
 float humid = 0;
 int photo = 0;
@@ -341,6 +341,9 @@ void setup()
 void draw()
 { 
   background(120, 85, 0);
+  
+  
+  
   translate(575, 400);
   rotateX(rotX);
   rotateZ(rotZ);
@@ -427,6 +430,7 @@ void draw()
   text("sink >> " + sinkRate * 100 + "pixels/sec", xMin, margin*19);
   text("key >> " + key, xMin, margin*20);
   text("keyCode >> " + keyCode, xMin, margin*21);
+  text("data >> " + vs.getData(), xMin, margin*25);
   if(!vs.getReady())
   {
     text("temp >> " + "Ready", xMin, margin*22);
@@ -453,6 +457,16 @@ void draw()
   }
 
   noStroke();
+  
+  pushMatrix();
+  fill(255, 255, 0);
+  translate(575, -100, vs.getIlluminance());
+  sphere(vs.getTemp()*5);
+  pointLight(vs.getTemp()*5, vs.getTemp()*5, vs.getTemp()*5, 575, -100, vs.getIlluminance()*3);
+  popMatrix();
+  
+  sinkRate = vs.getTemp()/200;
+  raindropMax = (int)(1000*(vs.getHumidity()/100));
 
   for (int y=0; y<rows-1; y++)
   {
