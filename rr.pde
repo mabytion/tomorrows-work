@@ -290,11 +290,12 @@ int r = 0, g = 255, b = 255;
 float waterLevel;
 float waterBottom = -140;
 float sinkRate = 0.11;
-float cloudHeight = 1000;
+float cloudHeight = 700;
 
 float humid = 0;
 int photo = 0;
 float temp = 0;
+float aheight=0;
 
 boolean cloudFlags = true;
 Timer timer;
@@ -458,15 +459,21 @@ void draw()
 
   noStroke();
   
-  pushMatrix();
-  fill(255, 255, 0);
-  translate(575, -100, vs.getIlluminance());
-  sphere(vs.getTemp()*5);
-  pointLight(vs.getTemp()*5, vs.getTemp()*5, vs.getTemp()*5, 575, -100, vs.getIlluminance()*3);
-  popMatrix();
+  if(vs.getReady())
+  {
+    pushMatrix();
+    fill(255, 255, 0);
+    translate(800*(cos(radians(aheight))), -200, 850*sin(radians(aheight)));
+    sphere(vs.getTemp()*5);
+    pointLight(vs.getIlluminance()/3, vs.getIlluminance()/3, vs.getIlluminance()/3, 800*cos(radians(aheight)), -200, 850*sin(radians(aheight)));
+    aheight+=0.1;
+    popMatrix();    
+  }
+  
   
   sinkRate = vs.getTemp()/200;
-  raindropMax = (int)(1000*(vs.getHumidity()/100));
+  targetRaindrop = (int)(1000*(vs.getHumidity()/100));
+  cloudCount = 1000-vs.getIlluminance();
 
   for (int y=0; y<rows-1; y++)
   {
