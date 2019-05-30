@@ -3,6 +3,11 @@
 #define DHT11_RETRY_DELAY 1000
 
 unsigned long last_read_time = 0;
+byte hI;
+byte hF;
+byte tI;
+byte tF;
+
 
 void setup()
 {
@@ -14,24 +19,22 @@ void loop()
   int err, photo;
   float temp;
   byte humid;
+  photo = analogRead(PHOTO_PIN);
   err = read(humid, temp);
   if(err == 0)
   {
-    Serial.print("temp: ");
-    Serial.println(temp);
-    Serial.print("humidity: ");
-    Serial.println(humid);
+    Serial.write(126);
+    Serial.write(tI);
+    Serial.write(tF);
+    Serial.write(hI);
+    Serial.write(hF);
+    Serial.write(photo >> 8);
+    Serial.write((byte)photo);
+    Serial.write(127);
   }
   else
   {
-    Serial.print("err: ");
-    Serial.println(err);
   }
-
-  photo = analogRead(PHOTO_PIN);
-
-  Serial.print("photo: ");
-  Serial.println(photo);
 
   delay(DHT11_RETRY_DELAY * 2);
 }
@@ -50,10 +53,10 @@ int read(byte& humidity, float& temperature) {
   if((temp = waitFor(HIGH, 90))<0) return 1; //waiting for first LOW signal(80us)
   if((temp = waitFor(LOW, 90))<0)  return 1; //waiting for first HIGH signal(80us)
 
-  byte hI=readByte();
-  byte hF=readByte();
-  byte tI=readByte();
-  byte tF=readByte();
+  hI=readByte();
+  hF=readByte();
+  tI=readByte();
+  tF=readByte();
   byte cksum=readByte();
   if(hI+hF+tI+tF!=cksum)
     return 4;
