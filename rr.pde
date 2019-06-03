@@ -171,37 +171,37 @@ class Values extends Thread
   private float temp = 0;
   private int data = 0;
   private boolean ready = false;
-  
+
   public Values(Serial p)
   {
     this.p = p;
   }
-  
+
   void run()
   {
-    while(!isInterrupted())
+    while (!isInterrupted())
     {
-      if(p.available() > 0)
+      if (p.available() > 0)
       {
         try
         {
           delay(1000);
-          for(int i=0;i<8;i++)
+          for (int i=0; i<8; i++)
           {
             data = p.read();
             buffer[i] = (byte)data;
           }
-          
-          if((buffer[0] != 126) || (buffer[7] != 127))
+
+          if ((buffer[0] != 126) || (buffer[7] != 127))
           {
             continue;
           }
-        
-          if(!checksum(buffer))
+
+          if (!checksum(buffer))
           {
             continue;
           }
-          
+
           ready = true;
           temp = (buffer[1]) + (buffer[2] / 100.0f);
           humid = buffer[3] + (buffer[4] / 100.0f);
@@ -210,54 +210,54 @@ class Values extends Thread
         }
         catch(ArrayIndexOutOfBoundsException e)
         {
-            print("d ");
+          print("d ");
         }
       }
     }
   }
-  
+
   private boolean checksum(byte[] byteArray)
   {
     byte temp = 0;
-    
-    for(byte val:byteArray)
+
+    for (byte val : byteArray)
     {
       temp += val;
     }
-    
-    if((temp + (~temp+1)) == 0x00)
+
+    if ((temp + (~temp+1)) == 0x00)
     {
       return true;
     }
-    
+
     return false;
   }
-  
+
   public float getHumidity()
   {
     return humid;
   }
-  
+
   public int getIlluminance()
   {
     return photo;
   }
-  
+
   public float getTemp()
   {
     return temp;
   }
-  
+
   public boolean getReady()
   {
     return ready;
   }
-  
+
   public String getData()
   {
     String data = new String();
-    
-    for(byte b : buffer)
+
+    for (byte b : buffer)
     {
       data += b;
       data += " ";
@@ -330,27 +330,27 @@ void setup()
   Sink sink = new Sink();
   DropReduce reduce = new DropReduce();
   timer = new Timer();
-  
+
   sink.start();
   reduce.start();
   timer.timerStop();
-  
-  vs = new Values(new Serial(this, "COM3", 9600));
+
+  vs = new Values(new Serial(this, "COM5", 9600));
   vs.start();
 }
 
 void draw()
 { 
   background(120, 85, 0);
-  
-  
-  
+
+
+
   translate(575, 400);
   rotateX(rotX);
   rotateZ(rotZ);
   scale(0.35 + scaleFactor);
 
-  if(cloudFlags)
+  if (cloudFlags)
   {
     for (int i=0; i<cloudCount; i++)
     {
@@ -366,8 +366,7 @@ void draw()
       {
         rd.remove(i);
         rd.add(new Raindrop(random(xMin, xMax-1)*scale, random(yMin, yMax-1)*scale, cloudHeight));
-      }
-      else
+      } else
       {
         rd.get(i).drop();
       }
@@ -432,17 +431,16 @@ void draw()
   text("key >> " + key, xMin, margin*20);
   text("keyCode >> " + keyCode, xMin, margin*21);
   text("data >> " + vs.getData(), xMin, margin*25);
-  if(!vs.getReady())
+  if (!vs.getReady())
   {
     text("temp >> " + "Ready", xMin, margin*22);
     text("humid >> " + "Ready", xMin, margin*23);
     text("illumi >> " + "Ready", xMin, margin*24);
-  }
-  else
+  } else
   {
     text("temp >> " + vs.getTemp() + "℃", xMin, margin*22);
     text("humid >> " + vs.getHumidity() + "%", xMin, margin*23);
-    text("illumi >> " + vs.getIlluminance(), xMin, margin*24);   
+    text("illumi >> " + vs.getIlluminance(), xMin, margin*24);
   }
 
   float yoff=flying;
@@ -458,22 +456,36 @@ void draw()
   }
 
   noStroke();
-  
-  if(vs.getReady())
+
+  if (vs.getReady())
   {
+    aheight+=0.1;
+    if((cloudHeight+500)*sin(radians(aheight))>=cloudHeight){
     pushMatrix();
     fill(255, 255, 0);
-    translate(800*(cos(radians(aheight))), -200, 850*sin(radians(aheight)));
+    translate(2000*(cos(radians(aheight))), -200, (cloudHeight+500)*sin(radians(aheight)));
     sphere(vs.getTemp()*5);
-    pointLight(vs.getIlluminance()/3, vs.getIlluminance()/3, vs.getIlluminance()/3, 800*cos(radians(aheight)), -200, 850*sin(radians(aheight)));
-    aheight+=0.1;
-    popMatrix();    
+    pointLight(vs.getIlluminance()/2, vs.getIlluminance()/2, vs.getIlluminance()/2, 2000*cos(radians(aheight)), -200, (cloudHeight+500)*sin(radians(aheight)));
+    popMatrix();
+    }
+    else
+    {
+      pointLight(0, 0, 0, 2000*cos(radians(aheight)), -200, (cloudHeight+500)*sin(radians(aheight)));
+    }
+  }
+
+
+  sinkRate = (vs.getTemp()/200);
+  cloudCount = 1000-vs.getIlluminance();
+  if(targetRaindrop>=cloudCount&&vs.getHumidity()<=50)
+  {
+    targetRaindrop = (int)cloudCount;
+  }
+  else
+  {
+  targetRaindrop = (int)(1000*(vs.getHumidity()/100));
   }
   
-  
-  sinkRate = vs.getTemp()/200;
-  targetRaindrop = (int)(1000*(vs.getHumidity()/100));
-  cloudCount = 1000-vs.getIlluminance();
 
   for (int y=0; y<rows-1; y++)
   {
@@ -496,7 +508,7 @@ void draw()
     vertex(x*scl-800, -600, terrain[x][0]);
   }
   endShape();
-  
+
   beginShape(TRIANGLE_STRIP);
   for (int x=0; x<cols; x++)
   {
@@ -550,8 +562,7 @@ void keyPressed()
     if (timer.isRun)
     {
       timer.timerStop();
-    }
-    else
+    } else
     {
       timer = new Timer();
       timer.start();
