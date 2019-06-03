@@ -65,39 +65,6 @@ class Raindrop
   }
 }
 
-class Timer extends Thread
-{
-  boolean isRun = true;
-  void run()
-  {
-    while (isRun)
-    {
-      try
-      {
-        targetRaindrop = (int)random(-800, 800);
-        if (targetRaindrop < 0)
-        {
-          targetRaindrop = 0;
-        }
-        sleep(5000);
-      }
-      catch(InterruptedException e)
-      {
-        e.printStackTrace();
-      }
-    }
-  }
-
-  boolean isRun()
-  {
-    return isRun;
-  }
-
-  void timerStop()
-  {
-    isRun = false;
-  }
-}
 
 class DropReduce extends Thread
 {
@@ -298,9 +265,7 @@ float temp = 0;
 float aheight=0;
 
 boolean cloudFlags = true;
-Timer timer;
 Values vs = null;
-Serial p = null;
 
 void setup()
 {
@@ -333,7 +298,6 @@ void setup()
 
   sink.start();
   reduce.start();
-  timer.timerStop();
 
   vs = new Values(new Serial(this, "COM5", 9600));
   vs.start();
@@ -342,8 +306,6 @@ void setup()
 void draw()
 { 
   background(120, 85, 0);
-
-
 
   translate(575, 400);
   rotateX(rotX);
