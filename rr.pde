@@ -153,10 +153,20 @@ class Values extends Thread
         try
         {
           delay(1000);
-          for (int i=0; i<8; i++)
+          
+          data = p.read();
+          if((byte)data != 126)
           {
-            data = p.read();
-            buffer[i] = (byte)data;
+            continue;
+          }
+          else
+          {
+            buffer[0] = (byte)data;
+            for (int i=1; i<8; i++)
+            {
+              data = p.read();
+              buffer[i] = (byte)data;
+            }
           }
 
           if ((buffer[0] != 126) || (buffer[7] != 127))
